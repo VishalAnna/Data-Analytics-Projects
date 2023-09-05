@@ -1,0 +1,76 @@
+create database sales;
+
+use sales;
+
+-- create table for Sales Order, ref. sales csv file for column names
+create or replace TABLE SALES.PUBLIC.SALES_ORDERS (
+	ORDERNUMBER VARCHAR(15),
+	ORDERDATE date  ,
+	CUSTOMER_NAME_INDEX NUMBER(38,0) PRIMARY KEY,
+	CHANNEL VARCHAR(15),
+	WAREHOUSE_CODE VARCHAR(15),
+	DELIVERY_REGION_INDEX NUMBER(38,0),
+	PRODUCT_DESCRIPTION_INDEX NUMBER(38,0) FOREIGN KEY REFERENCES PRODUCTS(INDEX),
+	ORDER_QUANTITY NUMBER(38,0),
+	UNIT_PRICE NUMBER(38,2),
+	TOTAL_REVENUE NUMBER(38,2),
+	TOTAL_UNIT_COST NUMBER(38,2)
+);
+
+
+--create table for customer, ref. csv file for column names
+create or replace table customers(
+Customer_Index number(15,0) primary key,
+Customer_Names varchar(15));
+
+--create table for regions, ref csv file for column names
+create or replace table regions(
+Index number(15,0) primary key,	
+City	varchar(30),
+Country	varchar(30));
+
+--create table for products, ref csv file for column names
+create or replace table products(
+Index number(38,0) primary key,	
+Product_Name varchar(15));
+
+
+describe table SALES_ORDERS;
+
+-- creating file format for all files 
+create or replace file format csv_file
+TYPE=CSV,
+SKIP_HEADER=1,
+FIELD_DELIMITER=',',
+TRIM_SPACE=FALSE,
+FIELD_OPTIONALLY_ENCLOSED_BY=NONE,
+DATE_FORMAT=AUTO,
+TIME_FORMAT=AUTO,
+TIMESTAMP_FORMAT=AUTO;
+
+-- load data using loading wizard
+select * from customers;
+select * from products;
+select * from regions;
+select * from sales_orders;
+
+-- WE are going to create master table fro this dataset
+create or replace table VN_sales as
+select a.*,b.CUSTOMER_NAMES,c.PRODUCT_NAME,d.CITY,d.COUNTRY,(d.city ||' '||d.country) as full_address
+from sales_orders a 
+inner join customers b on a.CUSTOMER_NAME_INDEX=b.CUSTOMER_INDEX
+inner join products c on a.PRODUCT_DESCRIPTION_INDEX=c.INDEX
+inner join regions d on a.DELIVERY_REGION_INDEX=d.index;
+
+
+-- Show all tables in master table 
+select * from SALES.PUBLIC.VN_SALES;
+
+
+
+
+
+
+
+
+
